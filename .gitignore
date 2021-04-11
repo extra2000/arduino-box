@@ -1,0 +1,4 @@
+.vagrant
+vagrant/*
+!vagrant/examples
+salt/roots/pillar/arduino.sls
