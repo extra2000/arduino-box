@@ -1,3 +1,6 @@
 [submodule "salt/roots/formulas/arduino-formula"]
 	path = salt/roots/formulas/arduino-formula
 	url = https://github.com/extra2000/arduino-formula.git
+[submodule "salt/roots/formulas/xorg-formula"]
+	path = salt/roots/formulas/xorg-formula
+	url = https://github.com/extra2000/xorg-formula.git
