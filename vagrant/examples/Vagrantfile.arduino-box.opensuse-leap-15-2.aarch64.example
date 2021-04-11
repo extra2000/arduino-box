@@ -1,0 +1,58 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+def salt_provision_arduino_box(context)
+  context.vm.provision "salt", run: 'once' do |salt|
+    salt.minion_config = "salt/etc/minion"
+    salt.masterless = true
+    salt.run_highstate = false
+    salt.verbose = true
+    salt.log_level = "info"
+    salt.colorize = true
+    salt.install_type = "git"
+    salt.version = "3002.6"
+    salt.python_version = "3"
+    salt.bootstrap_options = "-P -x python3 -c /tmp"
+  end
+end
+
+Vagrant.configure("2") do |config|
+
+  config.vagrant.plugins = ["vagrant-reload", "vagrant-scp"]
+
+  config.vm.define "arduino-box" do |arduino_box|
+    arduino_box.vm.box = "opensuse/Leap-15.2.aarch64"
+    arduino_box.vm.hostname = "arduino-box"
+
+    arduino_box.vm.provider "libvirt" do |v, override|
+      override.vagrant.plugins = config.vagrant.plugins + ["vagrant-libvirt"]
+      override.ssh.forward_agent = true
+      override.ssh.forward_x11 = true
+      v.cpus = "1"
+      v.cputopology sockets: "1", cores: "1", threads: "1"
+      v.memory = "1024"
+      v.disk_bus = "virtio"
+      v.nic_model_type = "virtio-net-pci"
+      v.nested = false
+      v.graphics_type = "vnc"
+      v.machine_arch = "aarch64"
+      v.driver = "kvm"
+      v.autostart = false
+      v.storage_pool_name = "default"
+
+      ## Uncomment this line to passthrough Arduino device.
+      ## Execute "lsusb" on host to find out about bus, device, vendor, and product number.
+      # v.usb_controller model: "nec-xhci"
+      # v.usb bus: "3", device: "5", vendor: "0x2341", product: "0x0043", startupPolicy: "mandatory"
+
+      override.vm.provision 'shell', run: 'once', inline: 'echo "send host-name \"arduino-box\";" >> /etc/dhclient.conf', privileged: true
+      override.vm.provision 'shell', run: 'once', inline: 'zypper install -y -t pattern devel_basis', privileged: true
+      override.vm.provision 'shell', run: 'once', inline: 'zypper install -y python3 python3-pip python3-setuptools python3-devel python3-virtualenv python3-pyzmq-devel', privileged: true
+      salt_provision_arduino_box override
+      override.vm.provision 'reload'
+    end
+
+    arduino_box.vm.synced_folder "salt/roots/", "/srv/", type: "rsync"
+    arduino_box.vm.synced_folder '.', '/vagrant', disabled: true
+  end
+end
