@@ -10,7 +10,7 @@ def salt_provision_arduino_box(context)
     salt.log_level = "info"
     salt.colorize = true
     salt.install_type = "git"
-    salt.version = "3002.6"
+    salt.version = "3003"
     salt.python_version = "3"
     salt.bootstrap_options = "-P -x python3 -c /tmp"
   end
