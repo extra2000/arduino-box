@@ -33,6 +33,12 @@ $ vagrant ssh arduino-box -- sudo salt-call state.sls arduino
 
 ## Starting Arduino IDE
 
+To upload Arduino projects into the Vagrant box:
+```
+$ vagrant rsync
+$ vagrant ssh arduino-box -- sudo salt-call state.sls arduinoprojects
+```
+
 To start Arduino IDE:
 ```
 $ vagrant ssh arduino-box -- /opt/arduino/arduino-1.8.13/arduino
